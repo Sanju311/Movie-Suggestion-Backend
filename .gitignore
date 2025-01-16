@@ -1,0 +1,12 @@
+Pip*
+*.ui
+.vscode
+__pycache__
+
+scraper_outputs
+.DS_Store
+tmdb-scraper/apikey.py
+
+#virtual environment
+venv
+.venv/
