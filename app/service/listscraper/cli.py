@@ -20,8 +20,8 @@ def cli_arguments():
                         required=False, default=None)
     
     parser.add_argument("-op", "--output_path", type=str, 
-                        help="set the path for the output file(s). Default output is a folder called 'scraper_outputs'.", 
-                        required=False, default="scraper_outputs")
+                        help="set the path for the output file(s). Default output is a folder called 'outputs'.", 
+                        required=False, default="outputs")
 
     parser.add_argument("-ofe", "--output_file_extension", type=str,
                         help="specify output file type, .csv or .json. Default output is .csv.",

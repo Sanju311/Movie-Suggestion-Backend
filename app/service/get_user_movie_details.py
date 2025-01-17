@@ -1,7 +1,6 @@
 import requests
 import csv
-from apikey import MY_API_KEY
-import ast
+from app.config import MY_API_KEY
 import spacy
 
 
@@ -137,59 +136,62 @@ def calculate_genre_encoding(genres):
 
 nlp = spacy.load('en_core_web_lg')
 def get_plot_vector(plot):
+    
     doc = nlp(plot)
     vector_array = doc.vector
     vector_list = vector_array.tolist()
     return vector_list
 
-# FILE NAME
-output_csv = '/Users/sanjusathiyamoorthy/Desktop/Side Projects/GitHub/Movie-Suggestion-Backend/TMDB/output/user_rated_movie_id.csv'
-input_csv = "/Users/sanjusathiyamoorthy/Desktop/Side Projects/GitHub/Movie-Suggestion-Backend/scraper_outputs/user_movie_list.csv"
 
+def get_user_movie_details(input_csv):
 
-#read data using csv reader
-with open(input_csv, mode='r', newline='', encoding='utf-8') as input_file:
-    reader = csv.DictReader(input_file)  # Use DictReader to access columns by name
+    output_csv = 'app/service/outputs/user_rated_movies.csv'
 
-    with open(output_csv, mode='w', newline='', encoding='utf-8') as file:
-        
-        writer = csv.writer(file)
-        writer.writerow(['title', 'id', 'actors', 'director', 'composer', 'writer', 'producer', 'budget', 'genres', 'genre_encoding','runtime', 'origin_country', 'overview', 'release_year', 'vote_average', 'parents_rating', 'user_rating', 'plot_vector'])
+    #read data using csv reader
+    with open(input_csv, mode='r', newline='', encoding='utf-8') as input_file:
+        reader = csv.DictReader(input_file)  # Use DictReader to access columns by name
 
-        for row in reader:
+        with open(output_csv, mode='w', newline='', encoding='utf-8') as file:
             
-            try:
-                #check if in database and if not use API to get the data
-                title = row['Film_title']
-                year = row['Release_year']
-                user_rating = row['Owner_rating']
-                
-                
-                ID = fetch_movie_ID(title,year)
-                if ID is  None:
-                    continue
-                    
-                cast_data = fetch_cast(ID)
-                if ID is  None:
-                    continue
-                else:
-                    actors, director, composer, screenplay, producer = cast_data
-                
-                movie_data = fetch_other_data(ID)
-                if movie_data is None:
-                    continue
-                else:
-                    budget, genres, runtime, origin_country, overview, release_date, vote_average, parents_rating = movie_data
-                    
-                plot_vector = get_plot_vector(overview)
-                if plot_vector is None:
-                    continue
-                    
-            
-                genre_encoding = calculate_genre_encoding(genres)
-                writer.writerow([title, ID, actors, director, composer, screenplay, producer, budget, genres, genre_encoding, runtime, origin_country, overview, year, vote_average, parents_rating, user_rating, plot_vector])  
+            writer = csv.writer(file)
+            writer.writerow(['title', 'id', 'actors', 'director', 'composer', 'writer', 'producer', 'budget', 'genres', 'genre_encoding','runtime', 'origin_country', 'overview', 'release_year', 'vote_average', 'parents_rating', 'user_rating', 'plot_vector'])
 
-            except Exception as e:
-                print(f"failed trying to get user movie data for {title}: {e}")
+            for row in reader:
+                
+                try:
+                    #check if in database and if not use API to get the data
+                    
+                    
+                    title = row['Film_title']
+                    year = row['Release_year']
+                    user_rating = row['Owner_rating']
+                    
+                    
+                    ID = fetch_movie_ID(title,year)
+                    if ID is  None:
+                        continue
+                        
+                    cast_data = fetch_cast(ID)
+                    if ID is  None:
+                        continue
+                    else:
+                        actors, director, composer, screenplay, producer = cast_data
+                    
+                    movie_data = fetch_other_data(ID)
+                    if movie_data is None:
+                        continue
+                    else:
+                        budget, genres, runtime, origin_country, overview, release_date, vote_average, parents_rating = movie_data
+                        
+                    plot_vector = get_plot_vector(overview)
+                    if plot_vector is None:
+                        continue
+                        
+                    genre_encoding = calculate_genre_encoding(genres)
+                    writer.writerow([title, ID, actors, director, composer, screenplay, producer, budget, genres, genre_encoding, runtime, origin_country, overview, year, vote_average, parents_rating, user_rating, plot_vector])  
 
+                except Exception as e:
+                    print(f"failed trying to get user movie data for {title}: {e}")
+
+    return output_csv
 

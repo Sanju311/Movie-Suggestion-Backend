@@ -17,7 +17,7 @@ class ScrapeInstance:
         inputURLs (list):               A list of URLs input from the command line.
         pages (str):                    Page options read from optional '-p' flag. Default is all pages ('*').
         output_name (str):              Output name obtained from optional '-on' flag. Default is list name from URL.
-        output_path (str):              Output path obtained from optional '-op' flag. Default is 'scraper_outputs' directory.
+        output_path (str):              Output path obtained from optional '-op' flag. Default is 'outputs' directory.
         output_file_extension (str):    Type of file outputted. Default is CSV, ".csv".
         infile (str):                   Name of input .txt file obtained from optional '-f' flag.
         concat (bool):                  Option to turn on list concatenation read from optional '--concat' flag. Default is False.
