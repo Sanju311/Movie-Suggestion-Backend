@@ -24,7 +24,9 @@ def train_model(user_rated_movies_output, tuning_mode = False):
     data = pd.read_csv(user_rated_movies_output)  # Replace "data.csv" with your actual file name
 
     # Select relevant features and target
-    features = ['budget', 'genre_encoding', 'runtime', 'release_year', 'vote_average', 'parents_rating', 'plot_vector']
+    #TODO: Get remaining features
+    #features = ['budget', 'genre_encoding', 'runtime', 'release_year', 'vote_average', 'parents_rating', 'plot_vector']
+    features = ['budget', 'runtime', 'release_year', 'vote_average', 'parents_rating', 'plot_vector']
     target = 'user_rating'
 
     # Convert genre_encoding from string to list

@@ -26,11 +26,6 @@ try:
     # Save the result to a new CSV file
     output_data.to_csv("movies_with_genre_encoding.csv", index=False)
 
-    # Save the genre-to-index mapping
-    genre_mapping = {genre: idx for idx, genre in enumerate(mlb.classes_)}
-    with open("genre_mapping.json", "w") as f:
-        json.dump(genre_mapping, f)
-
     print("One-hot encoding saved to movies_with_genre_one_hot.csv")
     print("Genre-to-index mapping saved to genre_mapping.json")
 

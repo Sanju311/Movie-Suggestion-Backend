@@ -1,5 +1,5 @@
-from listscraper.list_class import List
-import listscraper.checkimport_functions as cef
+from app.service.listscraper.list_class import List
+import app.service.listscraper.checkimport_functions as cef
 import concurrent.futures # for pool of threads
 import time
 import sys
@@ -52,7 +52,7 @@ class ScrapeInstance:
 
         self.inputURLs  = inputURLs
         self.global_page_options = pages
-        self.global_output_name = output_name
+        self.global_output_name = output_name + "_movie_list"
         self.output_path = output_path
         self.infile = infile
         self.concat = concat
@@ -105,7 +105,7 @@ class ScrapeInstance:
         for page in self.lists_to_scrape:
             print(page)
             
-        self.scrape_all_and_writeout(self.lists_to_scrape, self.Nthreads)
+        self.scrape_all_and_writeout(self.lists_to_scrape, self.global_output_name, self.Nthreads)
 
         self.endtime = time.time()
 
@@ -159,17 +159,13 @@ class ScrapeInstance:
     #                                          self.url_total, self.url_count, self.concat))
     #         self.url_count += 1
 
-    def import_from_commandline(self, inputURLs):
+    def import_from_commandline(self, inputURL):
         """
         Checks if there are URLs on the command line and individually imports them into List objects.
 
         Parameters:
             inputURLs (list):   List of strings of all list URLs on the command line.
         """
-
-        
-        #TODO Scrape the page in this function and figure out how many pages of lists there are
-        inputURL = inputURLs[0]
         print(f"input url:{inputURL}")
         
         page_response = requests.get(inputURL)
@@ -210,7 +206,7 @@ class ScrapeInstance:
             else:
                 self.concat_lists.extend(movie_list.films[1:])
 
-    def scrape_all_and_writeout(self, list_objs, max_workers=4):
+    def scrape_all_and_writeout(self, list_objs,output_name, max_workers=4):
         """
         Starts the scraping of all lists from Letterboxd and subsequently writes out to file(s).
 
@@ -233,7 +229,6 @@ class ScrapeInstance:
                 _ = [executor.submit(listobj.scrape, self.quiet, self.concat) for listobj in list_objs]
 
             self.concatenate_lists()
-            self.global_output_name = "user_movie_list"
 
             # Write out to path
             outpath = os.path.join(self.output_path, self.global_output_name + self.output_file_extension)

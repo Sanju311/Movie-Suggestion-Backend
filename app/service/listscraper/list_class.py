@@ -1,5 +1,5 @@
-from listscraper.scrape_functions import scrape_list
-import listscraper.checkimport_functions as cef
+from app.service.listscraper.scrape_functions import scrape_list
+import app.service.listscraper.checkimport_functions as cef
 import sys
 import csv
 import json

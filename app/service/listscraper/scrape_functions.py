@@ -1,4 +1,4 @@
-from listscraper.utility_functions import val2stars, stars2val
+from app.service.listscraper.utility_functions import val2stars, stars2val
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 import requests
@@ -176,7 +176,7 @@ def scrape_film(film_html, not_found):
     except:
         # Extra clause for type 'film' lists
         try:
-            starval = film_html.find_all("span")[-1].text
+            starval = film_html.find_all('span', {'class': 'rating'})[-1].text
             film_dict["Owner_rating"] = stars2val(starval, not_found)
         except:
             film_dict["Owner_rating"] = not_found
