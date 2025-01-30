@@ -7,6 +7,7 @@ import os
 import csv
 from bs4 import BeautifulSoup
 import requests
+import pandas as pd
 
 class ScrapeInstance:
     """
@@ -105,8 +106,7 @@ class ScrapeInstance:
         for page in self.lists_to_scrape:
             print(page)
             
-        self.scrape_all_and_writeout(self.lists_to_scrape, self.global_output_name, self.Nthreads)
-
+        self.scraped_movies = self.scrape_all_and_writeout(self.lists_to_scrape, self.global_output_name, self.Nthreads)
         self.endtime = time.time()
 
 
@@ -238,9 +238,16 @@ class ScrapeInstance:
             # else:
             header = list( self.concat_lists[0].keys() )
             
-            with open(outpath, 'w', newline="", encoding = "utf-8") as f:
-                write = csv.DictWriter(f, delimiter=",", fieldnames=header)
-                write.writeheader()
-                write.writerows(self.concat_lists)
+            # with open(outpath, 'w', newline="", encoding = "utf-8") as f:
+            #     write = csv.DictWriter(f, delimiter=",", fieldnames=header)
+            #     write.writeheader()
+            #     write.writerows(self.concat_lists)
+                
+                
+            # Create a pandas DataFrame from the concatenated lists
+            df = pd.DataFrame(self.concat_lists)
+
+            # Return the DataFrame
+            return df
             
             return print(f"    Written concatenated lists to {self.global_output_name}{self.output_file_extension}!")

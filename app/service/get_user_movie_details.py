@@ -3,6 +3,7 @@ import csv
 from app.config import MY_API_KEY
 import spacy
 import pandas as pd
+from pathlib import Path
 
 
 headers = {
@@ -54,8 +55,8 @@ def fetch_cast(movie_ID):
             print(f"No results found for movie: {movie_ID}")
             return None
         
-        # Extract the first 3 acting credits
-        actors = [member['name'] for member in data['cast'][:3]]
+        # # Extract the first 3 acting credits
+        # actors = [member['name'] for member in data['cast'][:3]]
 
         # Extract specific crew members
         director = next((member['name'] for member in data['crew'] if member['job'] == 'Director'), None)
@@ -63,7 +64,7 @@ def fetch_cast(movie_ID):
         screenplay = next((member['name'] for member in data['crew'] if member['job'] == 'Screenplay'), None)
         producer = next((member['name'] for member in data['crew'] if member['job'] == 'Producer'), None)
         
-        return actors, director, composer, screenplay, producer
+        return director, composer, screenplay, producer
     except Exception as e:
         print(f"failed trying to get movie cast for {movie_ID}: {e}")
         return None
@@ -103,12 +104,12 @@ def fetch_other_data(movie_ID):
         budget = data.get('budget', None)
         genres = [genre['name'] for genre in data.get('genres', [])]
         runtime = data.get('runtime', None)
-        origin_country = data.get('origin_country', None)
-        overview = data.get('overview', None)
+        #origin_country = data.get('origin_country', None)
+        #overview = data.get('overview', None)
         release_date = data.get('release_date', None)
         vote_average = data.get('vote_average', None)
         
-        return budget, genres, runtime, origin_country, overview, release_date, vote_average, parents_rating
+        return budget, genres, runtime, vote_average, parents_rating
     
     except Exception as e:
         print(f"failed trying to get movie details for {movie_ID}: {e}")
@@ -144,83 +145,90 @@ def get_plot_vector(plot):
     return vector_list
 
 
-def get_user_movie_details(input_csv):
+
+def fetch_all_movie_data(row):
+    
+    # Resolve the path dynamically (recommended for deployment)
+    CSV_PATH = Path(__file__).resolve().parent / "data" / "movie_database.csv"
+    movie_database = pd.read_csv('movie_database.csv')
+        
+    #TODO add a check to see if the movie is already in the database
+
+    #Film_title,Release_year,Owner_rating,Description
+    title, year = row['Film_title'], row['release_year']
+    ID = fetch_movie_ID(title,year)
+    if ID is None:
+        return [None] * 15
+
+    #if movie is already in the database, get the movie details needede 
+    if ID in movie_database['id'].values:
+        movie_database["release_date"] = movie_database["release_date"].astype(str).str[:4]
+        
+        existing_movie_data = movie_database[
+            (movie_database["title"] == row["Film_title"]) & 
+            (movie_database["release_date"] == row["Release_year"])
+            ].iloc[0]
+        
+        if not existing_movie_data.empty:
+            # Extract specific features from the existing movie data
+            #actors = existing_movie_data["actors"].values[0] if "actors" in existing_movie_data else None
+            #director = existing_movie_data["director"].values[0] if "director" in existing_movie_data else None
+            #release_date = existing_movie_data["release_date"].values[0] if "release_date" in existing_movie_data else None
+            #composer = existing_movie_data["composer"].values[0] if "composer" in existing_movie_data else None
+            #screenplay = existing_movie_data["screenplay"].values[0] if "screenplay" in existing_movie_data else None
+            #producer_avg_rating = existing_movie_data["producer_avg_rating"].values[0] if "producer_avg_rating" in existing_movie_data else None
+            #genres = existing_movie_data["genres"].values[0] if "genres" in existing_movie_data else None
+            #origin_country = existing_movie_data["origin_country"].values[0] if "origin_country" in existing_movie_data else None
+            #overview = existing_movie_data["overview"].values[0] if "overview" in existing_movie_data else None
+            budget = existing_movie_data["budget"].values[0] if "budget" in existing_movie_data else None
+            runtime = existing_movie_data["runtime"].values[0] if "runtime" in existing_movie_data else None
+            #director_avg_rating = existing_movie_data["director_avg_rating"].values[0] if "director_avg_rating" in existing_movie_data else None
+            vote_average = existing_movie_data["vote_average"].values[0] if "vote_average" in existing_movie_data else None
+            parents_rating = existing_movie_data["parents_rating"].values[0] if "parents_rating" in existing_movie_data else None
+            genre_encoding = existing_movie_data["genre_one_hot"].values[0] if "genre_one_hot" in existing_movie_data else None
+            #plot_vector = existing_movie_data["plot-vector"].values[0] if "plot-vector" in existing_movie_data else None
+            #producer_avg_rating = existing_movie_data["producer_avg_rating"].values[0] if "producer_avg_rating" in existing_movie_data else None
+            #writer_avg_rating = existing_movie_data["writer_avg_rating"].values[0] if "writer_avg_rating" in existing_movie_data else None
+            #composer_avg_rating = existing_movie_data["composer_avg_rating"].values[0] if "composer_avg_rating" in existing_movie_data else None
+        
+    else:
+        #check if that director has a movie in the database and get his average dir rating
+        #check if producer has a movie in the database and get his average producer rating
+        #check if composer has a movie in the database and get his average composer rating
+        #check if writer has a movie in the database and get his average writer rating 
+        # cast_data = fetch_cast(ID)
+        # director, composer, screenplay, producer = cast_data
+        
+        movie_data = fetch_other_data(ID)
+        budget, genres, runtime, vote_average, parents_rating = movie_data
+        genre_encoding = calculate_genre_encoding(genres)
+    
+
+    return [
+        ID, budget, genres, genre_encoding, runtime, vote_average, parents_rating
+    ]
+
+
+
+def get_user_movie_details(user_movie_data) -> pd.DataFrame:
 
     #all_movie_data = 'app/utility/all-movies-FINAL.csv'
-    output_csv = 'app/service/data/user_movie_list_details.csv'
+    #output_csv = 'app/service/data/user_movie_list_details.csv'
 
-    #read data using csv reader
-    with open(input_csv, mode='r', newline='', encoding='utf-8') as input_file:
-        reader = csv.DictReader(input_file)  # Use DictReader to access columns by name
+    
+    #writer.writerow(['title', 'id', 'actors', 'director', 'composer', 'writer', 'producer', 'budget', 'genres', 'genre_encoding','runtime', 'origin_country', 'overview', 'release_year', 'vote_average', 'parents_rating', 'user_rating', 'plot_vector'])
 
-        with open(output_csv, mode='w', newline='', encoding='utf-8') as file:
-            
-            writer = csv.writer(file)
-            writer.writerow(['title', 'id', 'actors', 'director', 'composer', 'writer', 'producer', 'budget', 'genres', 'genre_encoding','runtime', 'origin_country', 'overview', 'release_year', 'vote_average', 'parents_rating', 'user_rating', 'plot_vector'])
+    new_columns = [
+        "ID", "budget", "genres", "genre_encoding", "runtime", 
+        "vote_average", "parents_rating"
+    ]
 
-            all_movie_data = pd.read_csv('app/service/data/movie_database.csv')
+    # Apply function row-by-row and convert to DataFrame
+    new_data = user_movie_data.apply(fetch_all_movie_data, axis=1, result_type="expand")
+    
+    # Assign new columns to DataFrame
+    user_movie_data[new_columns] = new_data
 
-            for row in reader:
-                
-                try:
+    return user_movie_data
 
-                   
-                    title = row['Film_title']
-                    year = row['Release_year']
-                    user_rating = row['Owner_rating']
-                    
-                    ID = fetch_movie_ID(title,year)
-                    if ID is  None:
-                        continue
-                    
-                    
-                    #TODO add a check to see if the movie is already in the database
-                    
-                    #if movie is already in the database, get the movie details needede 
-                    if ID in all_movie_data['id'].values:
-                        movie_row = all_movie_data[all_movie_data['id'] == ID]
-                        
-                        #get movie details needed for the model + any details needed for returning to the front end
-                        director_avg = movie_row['director_avg_rating'].iloc[0]
-                        
-                        #check if that director has a movie in the database and get his average dir rating
-                        
-                        #check if producer has a movie in the database and get his average producer rating
-                        
-                        #check if composer has a movie in the database and get his average composer rating
-                        
-                        #check if writer has a movie in the database and get his average writer rating
-                        
-                        
-                    else:       
-                        cast_data = fetch_cast(ID)
-                        if ID is  None:
-                            continue
-                        else:
-                            actors, director, composer, screenplay, producer = cast_data
-                        
-                        movie_data = fetch_other_data(ID)
-                        if movie_data is None:
-                            continue
-                        else:
-                            budget, genres, runtime, origin_country, overview, release_date, vote_average, parents_rating = movie_data
-                            
-                        plot_vector = get_plot_vector(overview)
-                        if plot_vector is None:
-                            continue
-                            
-                        genre_encoding = calculate_genre_encoding(genres)
-                        
-                        #getting the average rating for the director, composer, writer and producer
-                        
-                        #use the average rating of the director, composer, writer and producer that already exists
-                        
-                        #add the value to the database using
-                        
-                    writer.writerow([title, ID, actors, director, composer, screenplay, producer, budget, genres, genre_encoding, runtime, origin_country, overview, year, vote_average, parents_rating, user_rating, plot_vector])  
-
-                except Exception as e:
-                    print(f"failed trying to get user movie data for {title}: {e}")
-
-    return output_csv
 
