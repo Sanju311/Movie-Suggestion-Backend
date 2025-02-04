@@ -20,45 +20,88 @@ def train_model(user_rated_movies_output, tuning_mode = False):
     
     start_time = time.time()
     
-    # Load the data
-    data = pd.read_csv(user_rated_movies_output)  # Replace "data.csv" with your actual file name
-
     # Select relevant features and target
     #TODO: Get remaining features
     #features = ['budget', 'genre_encoding', 'runtime', 'release_year', 'vote_average', 'parents_rating', 'plot_vector']
-    features = ['budget', 'runtime', 'release_year', 'vote_average', 'parents_rating', 'plot_vector']
-    target = 'user_rating'
+    features = ['budget', 'runtime', 'Release_year', 'vote_average', 'parents_rating']
+    target = 'Owner_rating'
 
+    #Film_title,Release_year,Owner_rating,Description,ID,budget,genres,genre_encoding,runtime,vote_average,parents_rating
+
+
+   
     # Convert genre_encoding from string to list
-    data['genre_encoding'] = data['genre_encoding'].apply(ast.literal_eval)
-    data['plot_vector'] = data['plot_vector'].apply(ast.literal_eval)
-    # Ensure other features are numeric
-    data[features] = data[features].apply(pd.to_numeric, errors='coerce')
+    def safe_literal_eval(val):
+        
+        if isinstance(val, list):
+            return val
+        elif isinstance(val, str):
+            try:
+                return ast.literal_eval(val)
+            except (ValueError, SyntaxError):
+                print(f"Failed to evaluate {val}")
+                print(ValueError, SyntaxError)
+                return [0] * 18
+            
+            
+    user_rated_movies_output['genre_encoding'] = user_rated_movies_output['genre_encoding'].apply(safe_literal_eval)
 
+    # Drop rows with null values or NoneType objects
+    print(f"length before removing nulls: {len(user_rated_movies_output)}")
+    user_rated_movies_output = user_rated_movies_output.dropna()
+    user_rated_movies_output = user_rated_movies_output[user_rated_movies_output['budget'] != 0.0]
+    print(f"length after removing any null or 0 values: {len(user_rated_movies_output)}")
+
+    # Expand list into multiple columns
+    genre_cols = [f'genre_{i}' for i in range(18)]
+    genre_df = pd.DataFrame(user_rated_movies_output['genre_encoding'].tolist(), columns=genre_cols)
+
+    # Drop original genre_encoding column and concatenate expanded columns
+    user_rated_movies_output = user_rated_movies_output.drop(columns=['genre_encoding']).reset_index(drop=True)
+    user_rated_movies_output = pd.concat([user_rated_movies_output, genre_df], axis=1)
+
+    features = features + genre_cols
+   
+    # for index, row in user_rated_movies_output.iterrows():
+    #     print(row['genre_encoding'])
+
+    # Ensure other features are numeric
+    #user_rated_movies_output[features] = user_rated_movies_output[features].apply(pd.to_numeric, errors='coerce')
 
     # Create feature matrix (X) and target vector (y)
-    X = data[features]
-    y = data[target]
+    X = user_rated_movies_output[features]
+    y = user_rated_movies_output[target]
+    
+    # Combine the feature matrix (X) and target vector (y) into a single DataFrame
+    data_to_save = X.copy()
+    data_to_save[target] = y
+
+    # Write the combined DataFrame to a CSV file
+    data_to_save.to_csv('app/service/data/training_data.csv', index=False)
+    
     
     if not tuning_mode:
         
-        #Define the parameter grid
-        param_grid = {
-            'n_estimators': 100,
-            'max_depth': 3,
-            'learning_rate': 0.1,
-            'subsample': 0.8,
-            'colsample_bytree': 0.8,
-            'min_child_weight': 3
-        }
+        try:
+            #Define the parameter grid
+            param_grid = {
+                'n_estimators': 100,
+                'max_depth': 3,
+                'learning_rate': 0.1,
+                'subsample': 0.8,
+                'colsample_bytree': 0.8,
+                'min_child_weight': 3
+            }
 
-        #Create the model
-        model = XGBRegressor(**param_grid, random_state=42) 
-        model.fit(X, y)
-        
-        #return trained model
-        return model
-    
+            #Create the model
+            model = XGBRegressor(**param_grid, random_state=42, enable_categorical=True) 
+            model.fit(X, y)
+            
+            #return trained model
+            return model
+        except Exception as e:
+            print(e)
+            return {"Failed to train model"}, 500
     else:
     
         from sklearn.model_selection import GridSearchCV

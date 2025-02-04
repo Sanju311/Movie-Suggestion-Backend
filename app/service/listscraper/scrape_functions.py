@@ -180,6 +180,8 @@ def scrape_film(film_html, not_found):
             film_dict["Owner_rating"] = stars2val(starval, not_found)
         except:
             film_dict["Owner_rating"] = not_found
+    
+    print(f"SCRAPED FILM RATING: {film_dict['Owner_rating']}")
         
     # Finding film's genres, if not found insert nan
     # try: 

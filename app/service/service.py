@@ -3,6 +3,7 @@ from app.service.listscraper.__main__ import scrape_movies
 from app.service.get_user_movie_details import get_user_movie_details
 from app.service.train_user_taste_profile import train_model
 from app.service.predict_user_ratings import predict_ratings
+from pandas import read_csv
  
 def get_movie_recomendations(username: str):
     
@@ -10,29 +11,38 @@ def get_movie_recomendations(username: str):
         #scrape user's movies from Letterboxd given their username
         letterboxdurl = "https://letterboxd.com/" + username + "/films/"
 
-        print("SCRAPING USER MOVIES...")
+        # print("SCRAPING USER MOVIES...")
         scraped_movies = scrape_movies(letterboxdurl, username)
-        
-        #scraped movies format
-        #Film_title,Release_year,Owner_rating,Description
-        
+        scraped_movies.to_csv('app/service/data/scraped_movies.csv', index=False)
+        #scraped_movies = read_csv('app/service/data/scraped_movies.csv')
+                
         #Use scraped movies to get movie details from the database or the API
-        user_movie_list_details_output = get_user_movie_details(scraped_movies)
-
-        #Use user's watched movie details to train the model
-        # print("TRAINING MODEL...")
-        # trained_model = train_model(user_movie_list_details_output)
+        user_movie_details = get_user_movie_details(scraped_movies)
+        user_movie_details.to_csv('app/service/data/user_movie_details.csv', index=False)
+        #user_movie_details = read_csv('app/service/data/user_movie_details.csv')
+        
+        print("TRAINING MODEL...")
+        trained_model = train_model(user_movie_details)
 
         # #Use model to predict user's rating for various movies and returning the top N
-        # print("PREDICTING USER RATINGS...")
-        # predicted_ratings = predict_ratings(trained_model, scraped_movies_output)
+        print("PREDICTING USER RATINGS...")
+        predicted_ratings = predict_ratings(trained_model, user_movie_details)
+        predicted_ratings.to_csv('app/service/data/predicted_ratings.csv', index=False)
         
-        # print(predicted_ratings)
-        return predict_ratings, 200
+        
+        # Select specific features to return
+        filtered_predictions = predicted_ratings[['title','id','vote_average', 'predicted_rating', 'Release_year', 'genres' ]]
+    
+        # Convert the DataFrame to a JSON format
+        result_json = filtered_predictions.to_json(orient='records')
+
+        return result_json, 200
+        return predicted_ratings, 200
     
     except Exception as e:
         print(e)
         return {"error": "An error occurred while processing the request"}, 500
     
     
-get_movie_recomendations("sanju311")
+
+#get_movie_recomendations("allemaine")

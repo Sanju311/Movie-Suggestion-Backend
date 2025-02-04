@@ -18,7 +18,7 @@ def stars2val(stars, not_found):
         "★★★★½": 4.5 }
 
     try:
-        val = conv_dict[stars]
+        val = conv_dict[stars.strip()]
         return val
     except:
         return not_found
