@@ -53,10 +53,13 @@ def predict_ratings(trained_model, scraped_movies_output):
         watched_movie_ids = scraped_movies_output['ID'].tolist()
         top_movies = top_movies[~top_movies['id'].isin(watched_movie_ids)]
         
+        # Multiply the predicted_rating by 2 to make it out of 10
+        top_movies['predicted_rating'] = top_movies['predicted_rating'] * 2
+        
         #return that data in the API in a format that the front end can consume
         # Return all features along with the top movies
         
-        return top_movies[['title','id','vote_average','predicted_rating', 'Release_year', 'parents_rating', 'runtime', 'genre_0', 'genre_1', 'genre_2', 'genre_3', 'genre_4', 'genre_5', 'genre_6', 'genre_7', 'genre_8', 'genre_9', 'genre_10', 'genre_11', 'genre_12', 'genre_13', 'genre_14', 'genre_15', 'genre_16', 'genre_17']]
+        return top_movies[['title','id','vote_average','predicted_rating', 'Release_year', 'parents_rating', 'runtime', 'genre_0', 'genre_1', 'genre_2', 'genre_3', 'genre_4', 'genre_5', 'genre_6', 'genre_7', 'genre_8', 'genre_9', 'genre_10', 'genre_11', 'genre_12', 'genre_13', 'genre_14', 'genre_15', 'genre_16', 'genre_17', 'genres']]
 
     
     except Exception as e:

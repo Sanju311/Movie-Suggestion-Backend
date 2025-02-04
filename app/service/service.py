@@ -31,18 +31,13 @@ def get_movie_recomendations(username: str):
         
         
         # Select specific features to return
-        filtered_predictions = predicted_ratings[['title','id','vote_average', 'predicted_rating', 'Release_year', 'genres' ]]
-    
-        # Convert the DataFrame to a JSON format
-        result_json = filtered_predictions.to_json(orient='records')
+        filtered_predictions = predicted_ratings[['title','id','vote_average', 'predicted_rating', 'Release_year', 'genres']]
 
-        return result_json, 200
-        return predicted_ratings, 200
+        return filtered_predictions
     
     except Exception as e:
         print(e)
         return {"error": "An error occurred while processing the request"}, 500
-    
     
 
 #get_movie_recomendations("allemaine")
