@@ -1,6 +1,6 @@
 import requests
 from app.config import MY_API_KEY
-import spacy
+# import spacy
 import pandas as pd
 import unicodedata
 
@@ -135,13 +135,13 @@ def calculate_genre_encoding(genres):
             
     return encoding
 
-nlp = spacy.load('en_core_web_lg')
-def get_plot_vector(plot):
+# nlp = spacy.load('en_core_web_lg')
+# def get_plot_vector(plot):
     
-    doc = nlp(plot)
-    vector_array = doc.vector
-    vector_list = vector_array.tolist()
-    return vector_list
+#     doc = nlp(plot)
+#     vector_array = doc.vector
+#     vector_list = vector_array.tolist()
+#     return vector_list
 
 
 movie_database = pd.read_csv('app/service/data/final_movie_database.csv')
