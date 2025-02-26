@@ -24,7 +24,7 @@ try:
     output_data.columns = ['movie_ID', 'genre_one_hot']
 
     # Save the result to a new CSV file
-    output_data.to_csv("movies_with_genre_encoding.csv", index=False)
+    #output_data.to_csv("movies_with_genre_encoding.csv", index=False)
 
     print("One-hot encoding saved to movies_with_genre_one_hot.csv")
     print("Genre-to-index mapping saved to genre_mapping.json")

@@ -29,7 +29,6 @@ def train_model(user_rated_movies_output, tuning_mode = False):
     #Film_title,Release_year,Owner_rating,Description,ID,budget,genres,genre_encoding,runtime,vote_average,parents_rating
 
 
-   
     # Convert genre_encoding from string to list
     def safe_literal_eval(val):
         
@@ -47,10 +46,10 @@ def train_model(user_rated_movies_output, tuning_mode = False):
     user_rated_movies_output['genre_encoding'] = user_rated_movies_output['genre_encoding'].apply(safe_literal_eval)
 
     # Drop rows with null values or NoneType objects
-    print(f"length before removing nulls: {len(user_rated_movies_output)}")
+    #print(f"length before removing nulls: {len(user_rated_movies_output)}")
     user_rated_movies_output = user_rated_movies_output.dropna()
     user_rated_movies_output = user_rated_movies_output[user_rated_movies_output['budget'] != 0.0]
-    print(f"length after removing any null or 0 values: {len(user_rated_movies_output)}")
+    #print(f"length after removing any null or 0 values: {len(user_rated_movies_output)}")
 
     # Expand list into multiple columns
     genre_cols = [f'genre_{i}' for i in range(18)]
@@ -77,7 +76,7 @@ def train_model(user_rated_movies_output, tuning_mode = False):
     data_to_save[target] = y
 
     # Write the combined DataFrame to a CSV file
-    data_to_save.to_csv('app/service/data/training_data.csv', index=False)
+    #data_to_save.to_csv('app/service/data/training_data.csv', index=False)
     
     
     if not tuning_mode:
@@ -160,9 +159,3 @@ def train_model(user_rated_movies_output, tuning_mode = False):
             print(f"Fold RMSE: {fold_rmse:.2f}")
 
         print(f"Mean Cross-Validation RMSE: {sum(cv_rmse) / len(cv_rmse):.2f}")
-            
-    # End the timer
-    end_time = time.time()
-    # Calculate and print the elapsed time
-    elapsed_time = end_time - start_time
-    print(f"Program runtime: {elapsed_time:.2f} seconds")

@@ -1,9 +1,7 @@
 import requests
-import csv
 from app.config import MY_API_KEY
 import spacy
 import pandas as pd
-from pathlib import Path
 import unicodedata
 
 

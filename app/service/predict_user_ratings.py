@@ -1,7 +1,6 @@
 import pandas as pd
 import ast
 
-
 def predict_ratings(trained_model, scraped_movies_output):    
     
     try:
