@@ -249,14 +249,12 @@ def get_user_movie_details(user_movie_data) -> pd.DataFrame:
         "vote_average", "parents_rating"
     ]
     try:
-        print(user_movie_data.head())
         # Apply function row-by-row and convert to DataFrame
         new_data = user_movie_data.apply(fetch_all_movie_data, axis=1, result_type="expand")
         new_data = new_data.dropna().reset_index(drop=True)
         
         # Assign new columns to DataFrame
         user_movie_data[new_columns] = new_data
-        print(user_movie_data.head())
         return user_movie_data
     
     except Exception as e:

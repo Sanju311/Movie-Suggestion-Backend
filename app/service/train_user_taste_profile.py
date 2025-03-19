@@ -58,6 +58,13 @@ def train_model(user_rated_movies_output, tuning_mode = False):
     # Drop original genre_encoding column and concatenate expanded columns
     user_rated_movies_output = user_rated_movies_output.drop(columns=['genre_encoding']).reset_index(drop=True)
     user_rated_movies_output = pd.concat([user_rated_movies_output, genre_df], axis=1)
+    
+    user_rated_movies_output['Release_year'] = pd.to_numeric(user_rated_movies_output['Release_year'], errors='coerce')
+    user_rated_movies_output['vote_average'] = pd.to_numeric(user_rated_movies_output['vote_average'], errors='coerce')
+    user_rated_movies_output['parents_rating'] = pd.to_numeric(user_rated_movies_output['parents_rating'], errors='coerce')
+    user_rated_movies_output['budget'] = pd.to_numeric(user_rated_movies_output['budget'], errors='coerce')
+    user_rated_movies_output['runtime'] = pd.to_numeric(user_rated_movies_output['runtime'], errors='coerce')
+    user_rated_movies_output['Owner_rating'] = pd.to_numeric(user_rated_movies_output['Owner_rating'], errors='coerce')
 
     features = features + genre_cols
    
@@ -76,7 +83,7 @@ def train_model(user_rated_movies_output, tuning_mode = False):
     data_to_save[target] = y
 
     # Write the combined DataFrame to a CSV file
-    #data_to_save.to_csv('app/service/data/training_data.csv', index=False)
+    #data_to_save.to_csv('TRAINING_DATA.csv', index=False)
     
     
     if not tuning_mode:
