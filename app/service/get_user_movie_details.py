@@ -1,4 +1,5 @@
 import requests
+import numpy as np
 from app.config import MY_API_KEY
 # import spacy
 import pandas as pd
@@ -145,6 +146,7 @@ def calculate_genre_encoding(genres):
 
 
 movie_database = pd.read_csv('app/service/data/final_movie_database.csv')
+movie_database = movie_database.dropna(subset=['Release_year'])
 def fetch_all_movie_data(row):
     
     # Resolve the path dynamically (recommended for deployment)
@@ -157,10 +159,14 @@ def fetch_all_movie_data(row):
         
         
         print(f"fetching data for: {title}")
+        curr_movie = movie_database[(movie_database['title'] == title) & (movie_database['Release_year'].astype(int) == int(year))]
         
-        curr_movie = movie_database[(movie_database['title'] == title) & (movie_database['Release_year'] == year)]
-        
+        # print(f"title type: {movie_database['title'].dtype}, year type: {movie_database['Release_year'].dtype}")
+        # print(f"title filter: {movie_database[(movie_database['title'] == title)]}")
+
         if len(curr_movie) == 1:
+            print(f"found movie in database: {title}")
+            # print(f"Release year: {year}")
             genres = curr_movie['genres'].values[0] 
             ID = curr_movie['id'].values[0]
             #origin_country = existing_movie_data["origin_country"].values[0] if "origin_country" in existing_movie_data else [None] * 7
@@ -178,6 +184,7 @@ def fetch_all_movie_data(row):
             genres = curr_movie['genres'].values[0] 
 
         else:
+            print(f"movie not found in database: {title}")
             ID = fetch_movie_ID(title,year)
             if ID is None:
                 return [None] * 7
