@@ -44,16 +44,18 @@ def predict_ratings(trained_model, scraped_movies_output):
         
         X_predict = data[features]
         data['predicted_rating'] = trained_model.predict(X_predict)
-        
-        # Sort by predicted ratings and select top N
-        top_movies = data.sort_values(by='predicted_rating', ascending=False).head(100)
+        data['predicted_rating'] = data['predicted_rating']*2
+
+        min_val = data['predicted_rating'].min()
+        max_val = data['predicted_rating'].max()
+        data['predicted_rating'] = 10 * (data['predicted_rating'] - min_val) / (max_val - min_val)
         
         # Filter out movies the user has already watched
         watched_movie_ids = scraped_movies_output['ID'].tolist()
-        top_movies = top_movies[~top_movies['id'].isin(watched_movie_ids)]
-        
-        # Multiply the predicted_rating by 2 to make it out of 10
-        top_movies['predicted_rating'] = top_movies['predicted_rating'] * 2
+        top_movies = data[~data['id'].isin(watched_movie_ids)]
+
+        # Sort by predicted ratings and select top N
+        top_movies = data.sort_values(by='predicted_rating', ascending=False).head(100)
         
         #return that data in the API in a format that the front end can consume
         # Return all features along with the top movies

@@ -10,3 +10,6 @@ tmdb-scraper/apikey.py
 #virtual environment
 venv
 .venv/
+
+
+.csv
