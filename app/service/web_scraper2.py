@@ -73,6 +73,7 @@ def scrape_letterboxd_movies_and_ratings(username_to_scrape):
                     "Owner_rating": user_rating
                 })
             page += 1
+
     except Exception as e:
         print(f"parsed up to page {page} until error: {e}")
         driver.quit()
@@ -89,4 +90,7 @@ def scrape_movies(username: str):
     
     df = pd.DataFrame(data, columns=['Film_title','Release_year','Owner_rating'])
     print(f"Results saved to scraper_output.csv")
+
+    if len(data) == 0:
+        return None
     return df

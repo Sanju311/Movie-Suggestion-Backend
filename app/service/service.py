@@ -14,6 +14,10 @@ def get_movie_recomendations(username: str):
 
         print("SCRAPING USER MOVIES...")
         scraped_movies = scrape_movies(username)
+
+        if scraped_movies is None:
+            return {"error": "invalid username"}
+
         #scraped_movies.to_csv('SCRAPED_MOVIES.csv', index=False)
         #scraped_movies = read_csv('app/service/data/scraped_movies.csv')
                 
@@ -22,7 +26,6 @@ def get_movie_recomendations(username: str):
         #user_movie_details.to_csv('MOVIE_DETAILS.csv', index=False)
         #user_movie_details.to_csv('app/service/data/user_movie_details.csv', index=False)
         #user_movie_details = read_csv('app/service/data/user_movie_details.csv')
-        
         print("TRAINING MODEL...")
         trained_model = train_model(user_movie_details)
 
