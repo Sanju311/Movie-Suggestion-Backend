@@ -7,6 +7,8 @@ controller_bp = Blueprint('controller_bp', __name__)
 def process_string(input_string):
     
     try:
+
+        print("GETTING MOVIE RECOMMENDATIONS...")
         recommendations = get_movie_recomendations(input_string)
 
         if isinstance(recommendations, dict):

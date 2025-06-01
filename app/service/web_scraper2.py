@@ -1,32 +1,36 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
-
+from selenium.common.exceptions import WebDriverException
 from bs4 import BeautifulSoup
 import pandas as pd
 import time
-
+import traceback
 
 def scrape_letterboxd_movies_and_ratings(username_to_scrape):
     """
     Scrape all films and ratings from a Letterboxd user's profile,
     with extra debugging to help diagnose issues.
     """
+    try: 
+        # Set up headless Chrome
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument('--disable-dev-shm-usage')
+        chrome_options.add_argument("--disable-gpu")
 
-    # Set up headless Chrome
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument('--no-sandbox')
-    chrome_options.add_argument('--disable-dev-shm-usage')
-    chrome_options.add_argument("--disable-gpu")
-
-    # Create driver without specifying custom paths
-    driver = webdriver.Chrome(options=chrome_options)
-
-    page = 1
-    results = []
-
+        # Create driver without specifying custom paths
+        driver = webdriver.Chrome(options=chrome_options, service=Service("/usr/bin/chromedriver"))
+    except WebDriverException as e:
+        print(f"error setting up driver: {e}")
+        traceback.print_exc()
+        return
+    
     try:
+
+        page = 1
+        results = []
         while True:
             # Replace with your target URL
             url = f"https://letterboxd.com/{username_to_scrape}/films/page/{page}/"
@@ -75,8 +79,9 @@ def scrape_letterboxd_movies_and_ratings(username_to_scrape):
             page += 1
 
     except Exception as e:
-        print(f"parsed up to page {page} until error: {e}")
-        driver.quit()
+        print(f"error parsing pages: {e}")
+        if driver: driver.quit()
+        return
 
     return results
 
@@ -84,6 +89,8 @@ def scrape_letterboxd_movies_and_ratings(username_to_scrape):
 def scrape_movies(username: str):
     
     data = scrape_letterboxd_movies_and_ratings(username)
+    if not data:
+        return None
 
     print("\n--- FINAL RESULTS ---")
     print(f"results list length: {len(data)}")
